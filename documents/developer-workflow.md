@@ -16,12 +16,15 @@ IOP introduces a **Dual-Cycle Workflow** that strictly separates *Planning* from
 ## Cycle B: Implementation (Orchestrator ↔ Agent)
 **Goal**: Execute the approved plan reliably.
 
-1.  **Dispatch**: Orchestrator assigns a single **Patch Task** to an Agent.
-2.  **Execution**: Agent modifies code *only* within the allowed **Code Anchors** and **Ownership Zones**.
-3.  **Gate Checks**:
+**Crucial Note**: Intents are **not magically executed**. Saving an `.intent` file does nothing until you deliberately trigger the Orchestrator.
+
+1.  **Trigger**: User runs `iop apply` (can handle multiple intent updates in one batch).
+2.  **Dispatch**: Orchestrator assigns tasks to Agents.
+3.  **Execution**: Agent modifies code *only* within the allowed **Code Anchors** and **Ownership Zones**.
+4.  **Gate Checks**:
     *   **Gate 0 (Structure)**: Did the agent respect the allowed scope?
     *   **Gate 1 (Automated)**: Do tests and linters pass?
-4.  **Promotion**: If gates pass, the patch is applied.
+5.  **Promotion**: If gates pass, the patch is applied.
 
 ## The Human in the Loop (Verification)
 
