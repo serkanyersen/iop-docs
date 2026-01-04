@@ -33,10 +33,18 @@ Automation handles the "mechanical" verification, but humans handle the "behavio
 3.  **Code Correctness**: (Auto) Tests & Lints.
 4.  **Behavioral Acceptance**: (**Human**) User Experience & Correctness.
 
-### Feedback Loop
-If the human finds a bug during Behavioral Acceptance:
-*   **Traditional**: Fix the code manually.
-*   **IOP Way**: **Update the Intent** (e.g., add a new constraint or test case) and let the system re-patch. This ensures the Intent remains the Source of Truth.
+### Feedback as Intent Refinement
+In IOP, **repeated feedback signals incomplete intent**, not just buggy code.
+*   **Traditional**: User finds bug → fix code → commit.
+*   **IOP Way**: User finds bug → **update intent** (e.g., add constraint) → orchestrator re-patches.
+*   *Why?* If you only fix the code, the intent remains ambiguous, and the next agent run may re-introduce the bug. Fixing the intent solves it forever.
+
+## Structured Human Interaction
+Open-ended chats with agents lead to "drift" (agents going off-script) and hidden context. IOP prevents this by enforcing **Structured Interactions**.
+
+*   **Option Cards**: The Orchestrator presents choices (A/B/C) for decisions, rather than asking "What do you want?".
+*   **Forms, not Chat**: Feedback is collected via structured forms (Issue Type, Location, Expected vs Observed), ensuring that data can be fed back into the Orchestrator deterministically.
+*   **Goal**: Reduce the "conversation surface area" where hallucinations thrive.
 
 ## Agent-Compiler Protocol
 Agents are not chat bots here. They follow a strict protocol:

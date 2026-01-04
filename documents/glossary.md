@@ -76,3 +76,22 @@ Deletion is modeled as *decommissioning*, preserving history and safe migration 
 A specialized intent type that defines a multi-step evolution of standard intents (e.g., a large refactor).
 *   Declares source and target states, ordered steps, and invariants.
 *   Turns messy refactors into planned, reversible evolutions.
+
+## Decision & Execution Terms
+
+### Decision Lock
+A mechanism (often via Code Anchors) that preserves implementation decisions (e.g., "Use SQLite", "Use Express") across iterations.
+*   Preventing the "new guy syndrome" where every AI run tries to rewrite the architecture.
+*   Intent-owned decisions are locked in the intent file; Code-mapping decisions are locked in the manifest.
+
+### Drift
+The tendency of AI agents to diverge from the original plan or valid code state over time.
+*   **Behavioral Drift**: The app works, but differently than specified.
+*   **Architectural Drift**: The app works, but the code structure is messy or violates patterns.
+*   IOP mitigates drift via strict Orchestration and Patch Plans.
+
+### Patch
+The fundamental unit of change in IOP.
+*   **Distinct from a Git Commit**: A patch is an atomic change to code driven by a single Intent Block modification.
+*   **Distinct from a Refactor**: A patch does not change the high-level intent; it aligns the code to the intent.
+*   Patches are small, scoped, and reversible.

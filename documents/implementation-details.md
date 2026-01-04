@@ -27,6 +27,11 @@ We use a **Layered Anchoring Model**:
     export const listTodos = async () => { ... }
     ```
 
+### Anchors as Decision Locks
+Crucially, **anchors capture decisions, not just locations**. They act as locks that preserve implementation choices across iterations.
+*   **Why does this code look this way?** The anchor links back to the specific intent version and the decisions (e.g., "Use Fastify", "Use Hexagonal Arch") active at generation time.
+*   **Drift Prevention**: Future patches must respect these locked decisions unless explicitly overridden by a new intent. Anchors ensure that the system doesn't "forget" it was told to use a specific pattern.
+
 ## 2. Ownership Zones
 To prevents AI from overwriting human work, we define strict zones:
 
@@ -44,14 +49,18 @@ The Manifest is the "database" of the system's relationship to code.
 *   Tracks the hash of the last applied patch (for drift detection).
 *   Records ownership zones.
 
-**Storage**:
-Instead of a single giant JSON file, we use **Sharded Manifests** (e.g., `.iop/manifests/api.todo.v1.json`) to avoid merge conflicts and scalability issues.
+**Storage Strategy: Sharded Manifests**
+We explicitly reject the "Mono-Manifest" approach (one giant `manifest.json`).
+*   **Problem**: A single file leads to constant merge conflicts (like `package-lock.json` or `yarn.lock` pain) and poor scalability in large teams.
+*   **Solution**: **Sharded Manifests** (e.g., `.iop/manifests/components/todo-list.v1.json`). Each intent owns its own small manifest shard.
 
 ## 4. Implementation Decisions
 How does the system remember that we chose "Fastify" over "Express"?
 
-**Hybrid Decision Tracking**:
-1.  **Intent-Owned Decisions**: High-level choices (Language, Framework, Architecture) are written back into the Intent files as "locked" facts.
+**Hybrid Decision Tracking**
+We separate high-level architectural choices from low-level file mappings to prevent bloat and improve reviewability.
+
+1.  **Intent-Owned Decisions**: Foundational choices are written back into the Intent files themselves.
     ```hcl
     intent "runtime" {
       decided "stack" {
@@ -60,7 +69,10 @@ How does the system remember that we chose "Fastify" over "Express"?
       }
     }
     ```
-2.  **Code-Mapping Decisions**: Low-level details (filenames, folder structure) live in the Manifest shards.
+    *   *Why?* Decisions live next to *why* they exist. They are diffable, reviewable, and part of the spec.
+
+2.  **Code-Mapping Decisions**: Low-level details (specific filenames, internal IDs) live in the Manifest shards.
+    *   *Why?* These are implementation details that don't need high-level human review.
 
 ## 5. Drift Detection
 The Orchestrator hashes "Managed" zones after every patch. On the next run, it compares the current hash to the stored hash.

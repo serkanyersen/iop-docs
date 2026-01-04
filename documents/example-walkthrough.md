@@ -75,3 +75,23 @@ The developer decides to remove the separate details page in favor of an inline 
 3.  **Task 3**: Compiler now emits a **Warning** if any new intent tries to reference `@todo_details`.
 
 This shows how IOP manages evolution safely, treating code deletions as managed deprecations.
+
+## 5. Scenario: The Compiler Says "No" (Refusal)
+
+IOP is designed to prevent bad changes *before* they touch code.
+
+**Developer Action**:
+A developer attempts to delete the `saving.intent` file directly from the file system.
+
+**Compiler Reaction**:
+```
+FATAL ERROR: Intent Deletion Rejected
+Target: saving.intent
+Reason: 5 active intents depend on @saving.
+Resolution:
+  1. Deprecate 'saving.intent' via lifecycle field first.
+  2. Update dependent intents to remove references.
+  3. Re-run compilation.
+```
+
+**Outcome**: The Orchestrator protects the dependency graph from destruction, forcing a safe migration path instead of a broken build.
