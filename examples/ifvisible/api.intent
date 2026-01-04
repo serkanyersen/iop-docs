@@ -1,0 +1,72 @@
+/* @iop-version 1.1 */
+intent "api" {
+  id = "ifvisible.public_api"
+  depends_on = ["ifvisible.core.visibility", "ifvisible.core.idleness"]
+
+  description = "The public facing API surface of the library."
+
+  block "event_subscription" {
+    prompt = """
+    Provide a comprehensive event subscription system for users to react to state changes.
+
+    Users should be able to listen to specific definitions of state:
+    - `blur`: Tab lost focus / Hidden.
+    - `focus`: Tab gained focus / Visible.
+    - `idle`: User became inactive.
+    - `wakeup`: User became active again.
+
+    Example:
+    ```javascript
+    ifvisible.on("idle", () => {
+       console.log("User is gone, stop the video");
+       video.pause();
+    });
+    ```
+    """
+
+    interface "methods" {
+      method "on(event: string, callback: () => void): void"
+      method "off(event: string, callback?: () => void): void"
+    }
+  }
+
+  block "smart_interval" {
+    prompt = """
+    A utility to run tasks periodically, but ONLY when the page is active.
+
+    This effectively wraps `setInterval` but adds awareness of the ifvisible state.
+
+    Example:
+    ```javascript
+    // Run this animation every 500ms, but stop if user tabs away/goes idle
+    ifvisible.onEvery(0.5, () => {
+        animateLogo();
+    });
+    ```
+    """
+
+    interface "methods" {
+      method "onEvery(seconds: number, callback: () => void): object"
+    }
+
+    acceptance {
+      criteria = "Interval pauses implementation-wise when stats is 'hidden' or 'idle'."
+      criteria = "Interval resumes automatically when status returns to 'active'."
+      criteria = "Returns an object allowing manual stop/resume of this specific interval."
+    }
+  }
+
+  block "manual_triggers" {
+    prompt = """
+    Allow developers to manually trigger states for testing or custom logic.
+    Calling `idle()` forces the library to behave as if the timer expired.
+    """
+
+    interface "methods" {
+      method "idle(): void"
+      method "wakeup(): void"
+      method "blur(): void"
+      method "focus(): void"
+    }
+  }
+}

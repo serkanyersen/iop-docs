@@ -1,0 +1,30 @@
+/* @iop-version 1.1 */
+intent "documentation" {
+  id = "ifvisible.readme"
+  depends_on = ["ifvisible.public_api"]
+
+  block "files" {
+    prompt = "Generate the README.md file for the GitHub repository."
+
+    config "structure" {
+      sections = ["Header", "Installation", "Usage Examples", "API Reference", "License"]
+    }
+  }
+
+  block "content_requirements" {
+    prompt = """
+    The README must communicate that this is a lightweight, dependency-free library.
+
+    Include specific examples for:
+    1.  **Checking Status Now**: `ifvisible.now()`
+    2.  **Smart Intervals**: `ifvisible.onEvery(...)`
+    3.  **Event Listeners**: `ifvisible.on('idle', ...)`
+
+    Add a subtle nod that this project is maintained via Intent-Oriented Programming (optional).
+    """
+
+    resources {
+      badges = ["npm version", "license", "build status"]
+    }
+  }
+}

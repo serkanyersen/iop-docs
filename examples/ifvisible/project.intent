@@ -1,0 +1,37 @@
+/* @iop-version 1.1 */
+intent "project" {
+  id = "ifvisible.project"
+
+  stack {
+    language = "typescript"
+    environment = "browser"
+    bundler = "vite" // Modern tooling
+  }
+
+  conventions {
+    constraint "zero_dependencies" {
+      prompt = "The library must have 0 runtime dependencies to keep the bundle size minimal."
+    }
+    constraint "compatibility" {
+      prompt = "Target modern evergreen browsers (Chrome, Firefox, Safari, Edge). Legacy support (IE) is NOT required."
+    }
+    constraint "types" {
+      prompt = "All public APIs must have full TypeScript definitions exported."
+    }
+    constraint "file_structure" {
+      prompt = """
+      Organize the source code in `src/`.
+      Suggested structure:
+      - `src/core/`: Visibility logic.
+      - `src/events/`: Event bus.
+      - `src/index.ts`: Main entry point.
+      """
+    }
+  }
+
+  generator {
+    output_strategy = "iife_bundle"
+    target_file = "dist/ifvisible.js"
+    types_file = "dist/ifvisible.d.ts"
+  }
+}

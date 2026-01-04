@@ -1,0 +1,43 @@
+/* @iop-version 1.1 */
+intent "idleness" {
+  id = "ifvisible.core.idleness"
+  depends_on = ["ifvisible.core.visibility"]
+
+  block "activity_tracking" {
+    prompt = """
+    Monitor user interaction events to determine if they are currently active on the page.
+
+    Listens for events like mouse movement or keyboard presses.
+    Each event typically resets the 'Idle Timer'.
+    """
+
+    resources {
+      events = ["mousemove", "mousedown", "keyup", "touchstart", "scroll"]
+    }
+
+    acceptance {
+      criteria = "Tracking must be throttled/debounced to avoid performance penalties during rapid events like scroll."
+    }
+  }
+
+  block "timer_logic" {
+    prompt = """
+    Implement the Idle Timer logic.
+
+    The timer counts down from a configured duration. If no user activity is detected before it expires, the state becomes 'Idle'.
+    Any activity resets the timer.
+    """
+
+    config "default_duration" {
+      value = 60000
+      unit = "milliseconds"
+      editable_via = "setIdleDuration(seconds)"
+    }
+
+    acceptance {
+      criteria = "When timer expires, trigger 'idle' state."
+      criteria = "When activity occurs after expire, trigger 'wakeup' state."
+      criteria = "If the tab becomes hidden (blur), should the timer pause or force idle? (Decision: Force Idle)."
+    }
+  }
+}

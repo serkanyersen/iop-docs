@@ -1,0 +1,32 @@
+/* @iop-version 1.1 */
+intent "demo" {
+  id = "ifvisible.demo_page"
+  depends_on = ["ifvisible.public_api"]
+
+  block "ui_layout" {
+    prompt = """
+    Create a simple, clean HTML demo page (`demo.html`) to showcase the library.
+
+    The UI should display:
+    1.  **Current State**: A large indicator showing "Active", "Idle", or "Hidden".
+    2.  **Timer**: A countdown showing time until next Idle state.
+    3.  **Logs**: A scrolling log area showing events as they fire (`blur`, `focus`, `wakeup`).
+
+    IMPORTANT: The HTML must import the built library from `../dist/ifvisible.js` (or similar relative path).
+    """
+  }
+
+  block "interactive_features" {
+    prompt = """
+    Implement interactive elements to test the API.
+
+    *   **Manual Trigger Buttons**: [Go Idle], [Wake Up].
+    *   **Smart Interval Test**: A counter that increments every second using `onEvery(1, ...)`. It should STOP incrementing when you switch tabs or go idle.
+    """
+
+    acceptance {
+      criteria = "The counter must visually stop when the user looks away."
+      criteria = "Visual feedback (color changes) when state changes (e.g., Red for Idle, Green for Active)."
+    }
+  }
+}

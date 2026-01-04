@@ -1,0 +1,31 @@
+/* @iop-version 1.1 */
+intent "visibility" {
+  id = "ifvisible.core.visibility"
+  depends_on = ["ifvisible.project"]
+
+  block "state_detection" {
+    prompt = """
+    Implement the core logic to detect if the page is currently visible to the user.
+
+    This should primarily rely on the standard Page Visibility API (`document.hidden`).
+    It should expose a synchronous method `now()` that returns `true` if the page is active/visible.
+    """
+
+    acceptance {
+      criteria = "Use `document.visibilityState` and `document.hidden`."
+      criteria = "Fallback to `window.onblur` / `window.onfocus` only if the standard API is missing (unlikely in modern target)."
+    }
+  }
+
+  block "event_normalization" {
+    prompt = """
+    Normalize browser-specific visibility events into standard internal signals.
+
+    We need a unified event stream that emits a 'statusChanged' signal whenever the browser reports a state change.
+    """
+
+    constraint "mapping" {
+      prompt = "Map 'visibilitychange', 'blur', and 'focus' events to the internal system."
+    }
+  }
+}
