@@ -7,6 +7,8 @@ Welcome to the system documentation for Intent-Oriented Programming. This docume
 The following documents should be read in order to build a complete mental model of the system.
 
 ### 1. Foundation
+*   **[Whitepaper](whitepaper.tex)**
+    *   The formal definition of the Intent-Oriented Programming paradigm.
 *   **[Introduction](documents/introduction.md)**
     *   Start here. Explains why IOP exists, the problem it solves, and the high-level vision.
 *   **[Glossary](documents/glossary.md)**
