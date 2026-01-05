@@ -5,6 +5,7 @@ intent "api" {
 
   description = "The public facing API surface of the library."
 
+
   block "event_subscription" {
     prompt = """
     Provide a comprehensive event subscription system for users to react to state changes.

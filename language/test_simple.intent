@@ -1,0 +1,4 @@
+intent "test" {
+  id = "test.id"
+  prompt = "hello world"
+}

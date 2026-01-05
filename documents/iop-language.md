@@ -1,102 +1,125 @@
-# IOP Language Specification
+# IOP Language Specification (Draft)
 
-This document defines the **Structured Natural Language (SNL)** and the schema for Intent files. It ensures that intents are predictable, diffable, and compilable.
+**Version**: 1.0 (Draft)
+**Status**: Experimental
 
-## 1. Design Philosophy
+## 1. Introduction
+The **Intent Definition Language (IDL)**, also known as **Structured Natural Language (SNL)**, is a declarative configuration language designed to define software intents. It combines strict machine-readable structure (HCL-like) with human-readable natural language blocks.
 
-The Intent Language is designed to allow:
--   **Product-level clarity**: Readable by non-programmers.
--   **Determinism**: Same intents always produce the same Canonical IR.
--   **Incremental Compilation**: Only changed parts trigger updates.
--   **Patch Planning**: The orchestrator can mostly understand impact without reading the prose.
+This specification defines the syntax and semantics of the language.
 
-## 2. File Organization
+## 2. Notation
+The syntax is specified using a variant of Extended Backus-Naur Form (EBNF):
+*   `Production = Rule`
+*   `{ ... }`: Zero or more repetitions.
+*   `[ ... ]`: Optional.
+*   `|`: Alternative.
+*   `"literal"`: Terminal string.
 
-Intent files live in the repository (e.g., `intents/`).
+## 3. Lexical Structure
 
-*   **Recommended Structure**:
-    *   `intents/app/`: App-level composition.
-    *   `intents/features/`: Feature-specific intents (e.g., `todo`, `auth`).
-    *   `intents/shared/`: Reusable resources and policies.
-*   **Naming Convention**: `<intent_name>.intent` (kebab-case).
+### 3.1 Comments
+*   **Single-line**: Starts with `//` or `#` and runs to the end of the line.
+*   **Multi-line**: Starts with `/*` and ends with `*/`.
 
-## 3. Intent Schema
+### 3.2 Identifiers
+Identifiers start with a letter or underscore, followed by letters, digits, or underscores.
+*   `foo`, `my_intent_v2`, `_internal` are valid.
+*   `123var` is invalid.
 
-### 3.1 Intent Header
-Every intent file must start with a header defining its identity.
+### 3.3 Strings
+*   **Quoted Strings**: Surrounded by double quotes (`"foo"`). Supports standard escape sequences (`\n`, `\"`).
+*   **Heredoc Strings**: Surrounded by triple quotes (`"""`). Preserves newlines and base indentation.
 
-```hcl
-intent  = "todo_list"
-id      = "component.todo_list.v1"
-kind    = "component"
-version = "1.0.0"
+## 4. Syntax
 
-# Optional Metadata
-title   = "Todo List Component"
-summary = "Main list view for tasks"
-owners  = ["@team-core"]
+### 4.1 File Structure
+An Intent file consists of a sequence of **Blocks** and **Attributes**.
+
+```ebnf
+File = { Attribute | Block }
 ```
 
-**Common Kinds**: `app`, `view`, `component`, `entity`, `actions`, `storage`, `policy`, `resource`.
+### 4.2 Attributes
+An attribute assigns a value to a key.
 
-### 3.2 References & Dependencies
-Intents must explicitly declare their relationships to build the **Intent Graph**.
-
-*   `renders`: Intents this intent directly renders/includes.
-*   `depends_on`: Upstream requirements (e.g., data stores).
-*   `uses`: Supporting resources or policies.
-*   `exports`: Capabilities provided by this intent.
-
-**Syntax**: `@<intent_name>` or `@<intent_name>.<export>`
-
-```hcl
-renders    = ["@todo_item"]
-depends_on = ["@saving.todos"]
-uses       = ["@branding", "@a11y.policy"]
+```ebnf
+Attribute = Identifier "=" Value
+Value = String | Number | Boolean | List | Map
 ```
 
-### 3.3 Atomic Blocks
-All natural language "prose" must be contained within **Atomic Blocks**. This is what makes the file "structured."
+### 4.3 Blocks
+A block defines a scoped configuration unit. It has a type, one or more labels, and a body.
 
-**Structure**:
-*   **ID**: Stable identifier (e.g., `purpose`, `interaction.drag_drop`).
-*   **Text**: The human-readable description.
-*   **Constraints**: Hard rules (MUST NOT).
-*   **Acceptance**: Verifiable outcomes (MUST BE TRUE).
-*   **Non-goals**: Explicit out-of-scope items.
-*   **Resources**: Links to designs or assets.
+```ebnf
+Block = Identifier { StringLiteral } "{" Body "}"
+Body = { Attribute | Block }
+```
 
 **Example**:
 ```hcl
-block "interaction.drag_drop" {
-  text = "Users can reorder items by dragging them."
-  constraints = [
-    "Drag handle must be distinct from the content area",
-    "No auto-scrolling during drag"
-  ]
-  acceptance = [
-    "New order persists after page refresh",
-    "Keyboard users can reorder via up/down actions"
-  ]
-  resources = {
-    design = "figma://..."
-  }
-}
+intent "core" { ... }
+block "logic" { ... }
 ```
 
-## 4. Machine-Visible Fields
-While text describes behavior, specific fields are exposed for the Orchestrator to route and plan effectively without understanding English.
+## 5. Standard Semantics
 
-*   **View**: `route`, `params`
-*   **Component**: `inputs`
-*   **Entity**: `fields` (map), `types`
-*   **Actions**: `signatures`
+This section defines the meaning of the core reserved block types.
 
-## 5. Canonicalization
-To ensure reliable diffing, the Orchestrator canonicalizes intent files before processing:
-1.  Sorts keys deterministically.
-2.  Normalizes whitespace in text blocks.
-3.  Resolves implicit defaults.
-4.  Assigns stable IDs to unnamed substructures if necessary.
+### 5.1 The `intent` Block
+The root block of any file. It MUST be the first block.
+*   **Label 1**: The intent kind (e.g., `"project"`, `"core"`).
+*   **Attributes**:
+    *   `id` (Required): Unique fully-qualified identifier (URN).
+    *   `depends_on`: List of URNs this intent strictly requires.
 
-**The Canonical IR is what the Orchestrator diffs, ensuring that formatting changes do not trigger code generation.**
+### 5.2 The `block` Block (Atomic Block)
+The fundamental unit of change.
+*   **Label 1**: The machine-stable ID (e.g., `"login_form"`).
+*   **Attributes**:
+    *   `prompt` (Required): The natural language instruction.
+    *   `lifecycle` (Optional): `"active"`, `"deprecated"`.
+
+### 5.3 The `constraint` Block
+Used within Atomic Blocks to define negative requirements.
+*   **Label 1**: A short handle (e.g., `"no_sql"`).
+*   **Attributes**:
+    *   `prompt` (Required): The rule description (e.g., "Must not use generic SQL query builders").
+
+### 5.4 The `acceptance` Block
+Used within Atomic Blocks to define verification criteria.
+*   **Attributes**:
+    *   `criteria` (List<String>): Checkable assertions.
+
+## 6. Type System
+IOP IDL is a configuration language, but supports strong typing for `config` blocks used by agents.
+
+*   `string`, `number`, `boolean`
+*   `list(<type>)`
+*   `map(<type>)`
+
+## 7. Contextual Resolution
+*   **Scope**: Strings inside `prompt` fields are semantically resolved by the Agent, not the Compiler.
+*   **References**: Strings starting with `@` (e.g., `"@auth.login"`) are validated as URN references by the Orchestrator.
+
+## 8. Compiler Directives (Headers)
+*   `/* @iop-version 1.1 */`: Declares the language version expected.
+
+## 9. Compiler Compliance & Validation
+
+This section defines the rules a compliant IOP Compiler must enforce.
+
+### 9.1 Static Validation
+*   **Uniqueness**: All `id` fields must be globally unique within the resolved workspace.
+*   **Acyclic Graph**: The dependency graph formed by `depends_on` MUST be a Directed Acyclic Graph (DAG). Circular dependencies are a compile-time error.
+*   **Referential Integrity**: All URNs referenced in `depends_on`, `uses`, or `renders` MUST exist in the workspace.
+
+### 9.2 Canonicalization (Stability)
+To ensure that Semantic Diffing is accurate, the compiler MUST canonicalize the Internal Representation (IR) before diffing:
+1.  **Key Sorting**: Attributes within a block must be sorted lexicographically by key.
+2.  **Whitespace Normalization**: `prompt` strings must have leading/trailing whitespace trimmed and line endings normalized to `\n`.
+3.  **Default Expansion**: Optional fields missing in the source (e.g., `lifecycle = "active"`) must be populated with their default values in the IR.
+
+### 9.3 Resolution Strategy
+*   **File Discovery**: The compiler assumes all `*.intent` files within the configured `roots` are part of the universe.
+*   **Lazy Loading**: Intents are indexed by `id`. Actual parsing of the body may be deferred until the graph walk reaches that node.

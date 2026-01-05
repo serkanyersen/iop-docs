@@ -37,6 +37,8 @@ The following documents should be read in order to build a complete mental model
     *   Git workflows, merging strategies, and the "Merge then Recompile" model for teams.
 *   **[CLI Reference](documents/cli-reference.md)**
     *   Documentation for `iop plan`, `apply`, `check`, and migration commands.
+*   **[Implementation Roadmap](documents/implementation-roadmap.md)**
+    *   The "Bill of Materials" required to build the actual toolset (CLI, LSP, SDKs).
 
 ### 5. The Future
 *   **[Future Vision](documents/future-vision.md)**

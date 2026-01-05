@@ -1,0 +1,12 @@
+{
+    "projectName": "Iop",
+    "languages": [{
+        "id": "iop",
+        "grammar": "src/language/iop.langium",
+        "fileExtensions": [".intent"],
+        "textMate": {
+            "out": "syntaxes/iop.tmLanguage.json"
+        }
+    }],
+    "out": "src/generated"
+}
