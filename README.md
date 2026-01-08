@@ -6,6 +6,9 @@ Welcome to the system documentation for Intent-Oriented Programming. This docume
 
 The following documents should be read in order to build a complete mental model of the system.
 
+
+### [📒 NoteBookLM](https://notebooklm.google.com/notebook/a5363f5c-92ef-4491-bf0b-407691cd1e30)
+
 ### 1. Foundation
 *   **[Whitepaper](whitepaper.pdf)**
     *   The formal definition of the Intent-Oriented Programming paradigm.
